@@ -1,30 +1,16 @@
 {
-	"name": "spansh-r2r-saver",
+	"name": "ecs-parallel",
 	"version": "0.0.1",
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"build-client": "rm -rf dist/public && mkdir dist/public && cd src/client && npm run build && cd ../../ && cp -R src/client/build/. dist/public",
-		"build-service": "rm -rf dist && babel src/service -d dist",
-		"build": "npm run build-service && npm run build-client",
-		"start-service": "node dist/index.js",
-		"start-service-only": "npm run build-service && npm run start-service -- 8000",
-		"start-service-only-debug": "npm run build-service && npm run start-service",
-		"start": "npm run build && npm run start-service",
+		"build": "rm -rf dist && babel src -d dist",
+		"start": "node src/index.js",
 		"watch": "npm-watch"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
-	"dependencies": {
-		"hapi": "^18.1.0",
-		"inert": "^5.1.2",
-		"lodash": "^4.17.11",
-		"node-fetch": "^2.3.0",
-		"redis": "^2.8.0",
-		"socket.io": "^2.2.0",
-		"uuid": "^3.3.2"
-	},
 	"devDependencies": {
 		"@babel/cli": "^7.2.3",
 		"@babel/core": "^7.3.4",
@@ -42,16 +28,9 @@
 		]
 	},
 	"watch": {
-		"start-service-only": {
+		"start": {
 			"patterns": [
-				"src/service"
-			],
-			"extensions": "js",
-			"quite": false
-		},
-		"start-service-only-debug": {
-			"patterns": [
-				"src/service"
+				"src"
 			],
 			"extensions": "js",
 			"quite": false
