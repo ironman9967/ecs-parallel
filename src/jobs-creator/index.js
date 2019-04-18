@@ -75,7 +75,9 @@ export default async ({
 								jobCall[componentId] = data
 								return jobCall
 							}, {})
-							jobArg.jobData = jobData
+							if (jobData) {
+								jobArg.jobData = jobData
+							}
 							systemCalls.push(jobs[name].startJob(jobArg).then(({ meta, result }) => {
 								if (typeof result == 'object') {
 									Object.keys(result).forEach(k => {
