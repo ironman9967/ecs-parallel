@@ -10,7 +10,8 @@ create(({
 		filter: [{
 			componentId: 'named'
 		}, {
-			componentId: 'eye'
+			componentId: 'eye',
+			readonly: true
 		}],
 		run: ({
 			named: {
@@ -31,9 +32,11 @@ create(({
 	createSystem({
 		name: 'logging',
 		filter: [{
-			componentId: 'named'
+			componentId: 'named',
+			readonly: true
 		}, {
-			componentId: 'eye'
+			componentId: 'eye',
+			readonly: true
 		}],
 		run: entry => console.log(entry)
 	})
@@ -67,12 +70,11 @@ create(({
 		const runs = await person.run({ entities: [ bob, jane ] })
 		runs.forEach(({ meta, entity }) => {
 			console.log('**********')
-			console.log('id', entity.id)
-			console.log('named', entity.getComponent({ componentId: 'named' }).data.name)
-			console.log('eye', entity.getComponent({ componentId: 'eye' }).data.color)
-			console.log('**********')
+			console.log('entity id', entity.id)
+			console.log('timing', meta.timing)
 		})
 		await logging.run({ entities: [ bob, jane ] })
+		console.log('**********')
 	}
 	await go()
 	setInterval(go, 2500)

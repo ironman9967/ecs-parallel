@@ -67,7 +67,15 @@ export default async ({
 								return jobCall
 							}, {})).then(({ meta, result }) => {
 								if (typeof result == 'object') {
-									Object.keys(result).forEach(k => entity.getComponent({ componentId: k }).data = result[k])
+									Object.keys(result).forEach(k => {
+										const component = entity.getComponent({ componentId: k })
+										if (component) {
+											const { readonly } = filter.find(({ componentId }) => componentId == k)
+											if (!readonly) {
+												component.data = result[k]
+											}
+										}
+									})
 								}
 								return {
 									meta,
