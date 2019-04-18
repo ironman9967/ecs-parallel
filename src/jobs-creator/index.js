@@ -15,7 +15,15 @@ export default async ({
 		return {
 			entityId: id,
 			id: newId(),
-			addComponent: ({ component }) => components.push(component),
+			addComponent: ({ component }) => {
+				if (component.componentId == 'jobData') {
+					throw new Error(`'jobData' is a reserved componentId`)
+				}
+				if (components.find(({ componentId }) => componentId == component.componentId)) {
+					throw new Error(`component ${component.id} has already been added to entity`)
+				}
+				components.push(component)
+			},
 			getComponent: ({ componentId }) => components.find(({ componentId: cid }) => componentId == cid)
 		}
 	}
@@ -45,6 +53,7 @@ export default async ({
 				systems[name] = {
 					filter,
 					run: async ({
+						jobData,
 						entities
 					}) => Promise.all(entities.reduce((systemCalls, entity) => {
 						const matchingComponents = filter.reduce((matchingComponents, {
@@ -57,7 +66,7 @@ export default async ({
 							return matchingComponents
 						}, [])
 						if (matchingComponents.length == filter.length) {
-							systemCalls.push(jobs[name].startJob(matchingComponents.reduce((jobCall, {
+							const jobArg = matchingComponents.reduce((jobCall, {
 								component: {
 									componentId,
 									data
@@ -65,7 +74,9 @@ export default async ({
 							}) => {
 								jobCall[componentId] = data
 								return jobCall
-							}, {})).then(({ meta, result }) => {
+							}, {})
+							jobArg.jobData = jobData
+							systemCalls.push(jobs[name].startJob(jobArg).then(({ meta, result }) => {
 								if (typeof result == 'object') {
 									Object.keys(result).forEach(k => {
 										const component = entity.getComponent({ componentId: k })

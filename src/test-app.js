@@ -8,34 +8,27 @@ create(({
 	createSystem({
 		name: 'person',
 		filter: [{
-			componentId: 'named'
+			componentId: 'name'
 		}, {
-			componentId: 'eye',
+			componentId: 'eyeColor',
 			readonly: true
 		}],
 		run: ({
-			named: {
-				name
-			},
-			eye: {
-				color
-			}
+			jobData: { nameAppendChar, eyeAppendChar },
+			name,
+			eyeColor
 		}) => ({
-			named: {
-				name: name + '-'
-			},
-			eye: {
-				color: color + '='
-			}
+			name: name + nameAppendChar,
+			eyeColor: eyeColor + eyeAppendChar
 		})
 	})
 	createSystem({
 		name: 'logging',
 		filter: [{
-			componentId: 'named',
+			componentId: 'name',
 			readonly: true
 		}, {
-			componentId: 'eye',
+			componentId: 'eyeColor',
 			readonly: true
 		}],
 		run: entry => console.log(entry)
@@ -44,19 +37,16 @@ create(({
 }, async ({
 	createComponentCreator,
 	createEntity,
-	systems: {
-		person,
-		logging
-	},
+	systems: { person, logging },
 	dispose
 }) => {
-	const { create: createNameComponent } = createComponentCreator({ id: 'named' })
-	const namedBobComponent = createNameComponent({ data: { name: 'bob' } })
-	const namedJaneComponent = createNameComponent({ data: { name: 'jane' } })
+	const { create: createNameComponent } = createComponentCreator({ id: 'name' })
+	const namedBobComponent = createNameComponent({ data: 'bob' })
+	const namedJaneComponent = createNameComponent({ data: 'jane' })
 
-	const { create: createEyeColorComponent } = createComponentCreator({ id: 'eye' })
-	const eyeColorBrownComponent = createEyeColorComponent({ data: { color: 'brown' } })
-	const eyeColorBlueComponent = createEyeColorComponent({ data: { color: 'blue' } })
+	const { create: createEyeColorComponent } = createComponentCreator({ id: 'eyeColor' })
+	const eyeColorBrownComponent = createEyeColorComponent({ data: 'brown' })
+	const eyeColorBlueComponent = createEyeColorComponent({ data: 'blue' })
 
 	const bob = createEntity()
 	bob.addComponent({ component: namedBobComponent })
@@ -67,17 +57,24 @@ create(({
 	jane.addComponent({ component: eyeColorBlueComponent })
 
 	const go = async () => {
-		const runs = await person.run({ entities: [ bob, jane ] })
-		runs.forEach(({ meta, entity }) => {
-			console.log('**********')
-			console.log('entity id', entity.id)
-			console.log('timing', meta.timing)
+		const runs = await person.run({
+			entities: [ bob, jane ],
+			jobData: { nameAppendChar: '#', eyeAppendChar: '%' }
 		})
-		await logging.run({ entities: [ bob, jane ] })
-		console.log('**********')
+		runs.forEach(async ({
+			meta: { timing: { duration } },
+			entity
+		}) => {
+			await logging.run({
+				jobData: { duration },
+				entities: [ entity ]
+			})
+		})
 	}
 	await go()
-	setInterval(go, 2500)
-
-	// dispose()
+	const going = setInterval(go, 2000)
+	setTimeout(() => {
+		clearInterval(going)
+		dispose()
+	}, 20000)
 })
