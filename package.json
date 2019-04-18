@@ -5,7 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"build": "rm -rf dist && babel src -d dist",
-		"start": "npm run build && node dist/index.js",
+		"start-test-app": "npm run build && node dist/test-app.js",
 		"watch": "npm-watch"
 	},
 	"keywords": [],
@@ -15,10 +15,11 @@
 		"@babel/cli": "^7.2.3",
 		"@babel/core": "^7.3.4",
 		"@babel/preset-env": "^7.3.4",
+		"@babel/polyfill": "^7.4.3",
 		"npm-watch": "^0.6.0"
 	},
 	"dependencies": {
-		"parallel-job-runner": "*"
+		"parallel-job-runner": "0.0.8"
 	},
 	"babel": {
 		"presets": [
@@ -29,7 +30,7 @@
 		]
 	},
 	"watch": {
-		"start": {
+		"start-test-app": {
 			"patterns": [
 				"src"
 			],

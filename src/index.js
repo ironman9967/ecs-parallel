@@ -1,24 +1,12 @@
 
-import createJobRunner from 'parallel-job-runner'
+import newId from 'uuid/v4'
 
-createJobRunner()
-.then(({
-	meta: { isMaster },
-	createJob: createRawJob,
-	dispose: disposeJobRunner
-}) => ({
-	isMaster,
-	createRawJob,
-	disposeJobRunner,
-	createSystem: () => {},
-	createComponent: () => {},
-	createEntity: () => {}
-}))
-.then(({
-	isMaster,
-	createRawJob,
-	disposeJobRunner,
-	createSystem,
-	createComponent,
-	createEntity,
-}) => disposeJobRunner())
+import pjr from 'parallel-job-runner'
+
+import jc from './jobs-creator'
+
+export const create = async (prep, app) => await (await jc({
+	prep,
+	app,
+	newId
+}))(await pjr())
