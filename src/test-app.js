@@ -7,12 +7,10 @@ create(({
 }) => {
 	createSystem({
 		name: 'person',
-		filter: [{
-			componentId: 'name'
-		}, {
-			componentId: 'eyeColor',
-			readonly: true
-		}],
+		filter: [
+			{ componentId: 'name' },
+			{ componentId: 'eyeColor', readonly: true }
+		],
 		run: ({
 			jobData: { nameAppendChar, eyeAppendChar },
 			name,
@@ -24,35 +22,34 @@ create(({
 	})
 	createSystem({
 		name: 'logging',
-		filter: [{
-			componentId: 'name',
-			readonly: true
-		}, {
-			componentId: 'eyeColor',
-			readonly: true
-		}],
+		filter: [
+			{ componentId: 'name', readonly: true },
+			{ componentId: 'eyeColor', readonly: true }
+		],
 		run: entry => console.log(entry)
 	})
 	finished()
 }, async ({
 	createComponentCreator,
-	createEntity,
+	createEntityCreator,
 	systems: { person, logging },
 	dispose
 }) => {
-	const { create: createNameComponent } = createComponentCreator({ id: 'name' })
+	const { create: createNameComponent } = createComponentCreator({ componentId: 'name' })
 	const namedBobComponent = createNameComponent({ data: 'bob' })
 	const namedJaneComponent = createNameComponent({ data: 'jane' })
 
-	const { create: createEyeColorComponent } = createComponentCreator({ id: 'eyeColor' })
+	const { create: createEyeColorComponent } = createComponentCreator({ componentId: 'eyeColor' })
 	const eyeColorBrownComponent = createEyeColorComponent({ data: 'brown' })
 	const eyeColorBlueComponent = createEyeColorComponent({ data: 'blue' })
 
-	const bob = createEntity()
+	const { create: createPersonEntity } = createEntityCreator({ entityId: 'person' })
+
+	const bob = createPersonEntity()
 	bob.addComponent({ component: namedBobComponent })
 	bob.addComponent({ component: eyeColorBrownComponent })
 
-	const jane = createEntity()
+	const jane = createPersonEntity()
 	jane.addComponent({ component: namedJaneComponent })
 	jane.addComponent({ component: eyeColorBlueComponent })
 
@@ -61,15 +58,10 @@ create(({
 			entities: [ bob, jane ],
 			jobData: { nameAppendChar: '#', eyeAppendChar: '%' }
 		})
-		runs.forEach(async ({
+		runs.forEach(({
 			meta: { timing: { duration } },
 			entity
-		}) => {
-			await logging.run({
-				jobData: { duration },
-				entities: [ entity ]
-			})
-		})
+		}) => logging.run({ jobData: { duration }, entities: [ entity ] }))
 	}
 	await go()
 	const going = setInterval(go, 2000)

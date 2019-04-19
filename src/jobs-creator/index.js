@@ -9,32 +9,6 @@ export default async ({
 	finished
 }) => {
 	const systems = []
-
-	const createEntityCreator = ({ id = newId() } = {}) => () => {
-		const components = []
-		return {
-			entityId: id,
-			id: newId(),
-			addComponent: ({ component }) => {
-				if (component.componentId == 'jobData') {
-					throw new Error(`'jobData' is a reserved componentId`)
-				}
-				if (components.find(({ componentId }) => componentId == component.componentId)) {
-					throw new Error(`component ${component.id} has already been added to entity`)
-				}
-				components.push(component)
-			},
-			getComponent: ({ componentId }) => components.find(({ componentId: cid }) => componentId == cid)
-		}
-	}
-	const createComponentCreator = ({ id = newId() } = {}) => ({
-		create: ({ data }) => ({
-			componentId: id,
-			id: newId(),
-			data
-		})
-	})
-
 	prep({
 		createSystem: ({ name, filter, run }) => {
 			createJob({ name, work: run })
@@ -44,13 +18,36 @@ export default async ({
 			jobs,
 			dispose
 		}) => app({
-			createEntity: createEntityCreator(),
-			createComponentCreator,
+			createEntityCreator: ({ entityId = newId() } = {}) => ({
+				entityId,
+				create: ({ id = newId() } = {}) => {
+					const components = []
+					return {
+						entityId,
+						id,
+						addComponent: ({ component }) => {
+							if (component.componentId == 'jobData') {
+								throw new Error(`'jobData' is a reserved componentId`)
+							}
+							if (components.find(({ componentId }) => componentId == component.componentId)) {
+								throw new Error(`component ${component.id} has already been added to entity ${entityId}`)
+							}
+							components.push(component)
+						},
+						getComponent: ({ componentId }) => components.find(({ componentId: cid }) => componentId == cid)
+					}
+				}
+			}),
+			createComponentCreator: ({ componentId = newId() } = {}) => ({
+				componentId,
+				create: ({ data, id = newId() } = {}) => ({ componentId, id, data })
+			}),
 			systems: systems.reduce((systems, {
 				name,
 				filter
 			}) => {
 				systems[name] = {
+					name,
 					filter,
 					run: async ({
 						jobData,
