@@ -15,10 +15,10 @@ create(({
 			jobData: { nameAppendChar, eyeAppendChar },
 			name,
 			eyeColor
-		}) => ({
+		}) => new Promise(resolve => setTimeout(() => resolve({
 			name: name + nameAppendChar,
 			eyeColor: eyeColor + eyeAppendChar
-		})
+		}), 250))
 	})
 	createSystem({
 		name: 'logging',
