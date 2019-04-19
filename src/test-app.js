@@ -6,7 +6,7 @@ create(({
 	finished
 }) => {
 	createSystem({
-		name: 'person',
+		systemId: 'person',
 		filter: [
 			{ componentId: 'name' },
 			{ componentId: 'eyeColor', readonly: true }
@@ -21,7 +21,7 @@ create(({
 		}), 250))
 	})
 	createSystem({
-		name: 'logging',
+		systemId: 'logging',
 		filter: [
 			{ componentId: 'name', readonly: true },
 			{ componentId: 'eyeColor', readonly: true }

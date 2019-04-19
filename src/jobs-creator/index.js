@@ -10,9 +10,9 @@ export default async ({
 }) => {
 	const systems = []
 	prep({
-		createSystem: ({ name, filter, run }) => {
-			createJob({ name, work: run })
-			systems.push({ name, filter })
+		createSystem: ({ systemId, filter, run }) => {
+			createJob({ name: systemId, work: run })
+			systems.push({ systemId, filter })
 		},
 		finished: () => finished(({
 			jobs,
@@ -43,11 +43,11 @@ export default async ({
 				create: ({ data, id = newId() } = {}) => ({ componentId, id, data })
 			}),
 			systems: systems.reduce((systems, {
-				name,
+				systemId,
 				filter
 			}) => {
-				systems[name] = {
-					name,
+				systems[systemId] = {
+					systemId,
 					filter,
 					run: async ({
 						jobData,
@@ -75,7 +75,7 @@ export default async ({
 							if (jobData) {
 								jobArg.jobData = jobData
 							}
-							systemCalls.push(jobs[name].startJob(jobArg).then(({ meta, result }) => {
+							systemCalls.push(jobs[systemId].startJob(jobArg).then(({ meta, result }) => {
 								if (typeof result == 'object') {
 									Object.keys(result).forEach(k => {
 										const component = entity.getComponent({ componentId: k })
