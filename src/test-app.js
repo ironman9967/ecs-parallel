@@ -20,14 +20,6 @@ create(({
 			eyeColor: eyeColor + eyeAppendChar
 		}), 250))
 	})
-	createSystem({
-		systemId: 'logging',
-		filter: [
-			{ componentId: 'name', readonly: true },
-			{ componentId: 'eyeColor', readonly: true }
-		],
-		run: entry => console.log(entry)
-	})
 	finished()
 }, async ({
 	createComponentCreator,
@@ -55,18 +47,17 @@ create(({
 
 	const go = async () => {
 		const runs = await person.run({
-			entities: [ bob, jane ],
+			entities: [
+				bob,
+				// jane
+			],
 			jobData: { nameAppendChar: '#', eyeAppendChar: '%' }
 		})
-		runs.forEach(({
-			meta: { timing: { duration } },
-			entity
-		}) => logging.run({ jobData: { duration }, entities: [ entity ] }))
 	}
 	await go()
-	const going = setInterval(go, 2000)
+	// const going = setInterval(go, 2000)
 	setTimeout(() => {
-		clearInterval(going)
+		// clearInterval(going)
 		dispose()
-	}, 20000)
+	}, 3000)
 })

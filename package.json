@@ -12,14 +12,16 @@
 	"author": "",
 	"license": "ISC",
 	"devDependencies": {
-		"@babel/cli": "^7.2.3",
-		"@babel/core": "^7.3.4",
-		"@babel/preset-env": "^7.3.4",
-		"@babel/polyfill": "^7.4.3",
+		"@babel/cli": "^7.4.4",
+		"@babel/core": "^7.4.4",
+		"@babel/polyfill": "^7.4.4",
+		"@babel/preset-env": "^7.4.4",
 		"npm-watch": "^0.6.0"
 	},
 	"dependencies": {
-		"parallel-job-runner": "0.0.8"
+		"parallel-job-runner": "^0.1.5",
+		"performance-now": "^2.1.0",
+		"subject-with-filter": "^1.0.0"
 	},
 	"babel": {
 		"presets": [
