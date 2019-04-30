@@ -130,7 +130,9 @@ export const getSystemRuns = ({
 							})
 							allComponents.push(component)
 							if (!readonly) {
-								if (!equalsResult(component.data)) {
+								const updated = !equalsResult(component.data)
+								component.data = result[k]
+								if (updated) {
 									pubComponent({
 										event: 'data-updated',
 										...entityEvtData,
@@ -142,7 +144,6 @@ export const getSystemRuns = ({
 									})
 									updatedComponents.push(component)
 								}
-								component.data = result[k]
 							}
 							else {
 								readonlyComponents.push(component)
