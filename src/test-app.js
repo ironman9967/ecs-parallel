@@ -24,7 +24,7 @@ create(({
 }, async ({
 	createComponentCreator,
 	createEntityCreator,
-	systems: { person, logging },
+	systems: { person },
 	dispose
 }) => {
 	const { create: createNameComponent } = createComponentCreator({ componentId: 'name' })
@@ -45,19 +45,21 @@ create(({
 	jane.addComponent({ component: namedJaneComponent })
 	jane.addComponent({ component: eyeColorBlueComponent })
 
+	person.observe.subscribe(console.log)
+
 	const go = async () => {
 		const runs = await person.run({
 			entities: [
 				bob,
-				// jane
+				jane
 			],
 			jobData: { nameAppendChar: '#', eyeAppendChar: '%' }
 		})
 	}
 	await go()
 	// const going = setInterval(go, 2000)
-	setTimeout(() => {
+	// setTimeout(() => {
 		// clearInterval(going)
 		dispose()
-	}, 3000)
+	// }, 3000)
 })

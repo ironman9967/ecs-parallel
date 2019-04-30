@@ -19,6 +19,7 @@
 		"npm-watch": "^0.6.0"
 	},
 	"dependencies": {
+		"lodash": "^4.17.11",
 		"parallel-job-runner": "^0.1.5",
 		"performance-now": "^2.1.0",
 		"subject-with-filter": "^1.0.0"
