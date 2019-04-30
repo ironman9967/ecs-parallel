@@ -57,8 +57,8 @@ export default async ({
 			jobs,
 			// jobsArray,
 			dispose
-		}) => app({
-			createEntityCreator: ({ entityId = newId() } = {}) => ({
+		}) => {
+			const createEntityCreator = ({ entityId = newId() } = {}) => ({
 				entityId,
 				create: ({ id = newId() } = {}) => {
 					const components = []
@@ -84,8 +84,8 @@ export default async ({
 					entityPubs.push({ pub: next, entity })
 					return entity
 				}
-			}),
-			createComponentCreator: ({ componentId = newId() } = {}) => ({
+			})
+			const createComponentCreator = ({ componentId = newId() } = {}) => ({
 				componentId,
 				create: ({ data, id = newId() } = {}) => {
 					const {
@@ -96,57 +96,71 @@ export default async ({
 					componentPubs.push({ pub: next, component })
 					return component
 				}
-			}),
-			systems: systems.reduce((systems, {
-				observeSystem: {
-					next: pubSystem,
-					...observe
+			})
+			return app({
+				createEntityCreator,
+				createComponentCreator,
+				createEntityFromObject: ({ obj, entityId }) => {
+					const { create } = createEntityCreator({ entityId })
+					const entity = create()
+					Object.keys(obj).forEach(k => {
+						const { create } = createComponentCreator({ componentId: k })
+						const component = create({ data: obj[k] })
+						entity.addComponent({ component })
+					})
+					return entity
 				},
-				observeJob: {
-					subscribe: subJob
-				},
-				created: systemCreated,
-				systemId,
-				filter
-			}) => {
-				subJob(({ event, ...job }) => pubSystem({ event: `system-${event}`, ...job }))
-				systems[systemId] = {
-					systemCreated,
+				systems: systems.reduce((systems, {
+					observeSystem: {
+						next: pubSystem,
+						...observe
+					},
+					observeJob: {
+						subscribe: subJob
+					},
+					created: systemCreated,
 					systemId,
-					filter,
-					observe,
-					run: async ({
-						jobData,
-						entities: userPassedEntities
-					}) => {
-						pubSystem({
-							event: 'running',
-							systemCreated,
-							systemId,
-							filter,
+					filter
+				}) => {
+					subJob(({ event, ...job }) => pubSystem({ event: `system-${event}`, ...job }))
+					systems[systemId] = {
+						systemCreated,
+						systemId,
+						filter,
+						observe,
+						run: async ({
 							jobData,
 							entities: userPassedEntities
-						})
-						return Promise.all(getSystemRuns({
-							isEqual,
-							systemCreated,
-							systemId,
-							jobData,
-							entityPubs: entityPubs.filter(({ entity }) => userPassedEntities.find(({ id }) => entity.id == id)),
-							componentPubs,
-							filter,
-							jobs,
-							meta,
-							pubSystem
-						}))
+						}) => {
+							pubSystem({
+								event: 'running',
+								systemCreated,
+								systemId,
+								filter,
+								jobData,
+								entities: userPassedEntities
+							})
+							return Promise.all(getSystemRuns({
+								isEqual,
+								systemCreated,
+								systemId,
+								jobData,
+								entityPubs: entityPubs.filter(({ entity }) => userPassedEntities.find(({ id }) => entity.id == id)),
+								componentPubs,
+								filter,
+								jobs,
+								meta,
+								pubSystem
+							}))
+						}
 					}
+					return systems
+				}, {}),
+				dispose: async () => {
+					unsubs.forEach(unsub => unsub())
+					return await dispose()
 				}
-				return systems
-			}, {}),
-			dispose: async () => {
-				unsubs.forEach(unsub => unsub())
-				return await dispose()
-			}
-		}))
+			})
+		})
 	})
 }

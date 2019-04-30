@@ -24,16 +24,15 @@ create(({
 }, async ({
 	createComponentCreator,
 	createEntityCreator,
+	createEntityFromObject,
 	systems: { person },
 	dispose
 }) => {
 	const { create: createNameComponent } = createComponentCreator({ componentId: 'name' })
 	const namedBobComponent = createNameComponent({ data: 'bob' })
-	const namedJaneComponent = createNameComponent({ data: 'jane' })
 
 	const { create: createEyeColorComponent } = createComponentCreator({ componentId: 'eyeColor' })
 	const eyeColorBrownComponent = createEyeColorComponent({ data: 'brown' })
-	const eyeColorBlueComponent = createEyeColorComponent({ data: 'blue' })
 
 	const { create: createPersonEntity } = createEntityCreator({ entityId: 'person' })
 
@@ -41,9 +40,13 @@ create(({
 	bob.addComponent({ component: namedBobComponent })
 	bob.addComponent({ component: eyeColorBrownComponent })
 
-	const jane = createPersonEntity()
-	jane.addComponent({ component: namedJaneComponent })
-	jane.addComponent({ component: eyeColorBlueComponent })
+	const jane = createEntityFromObject({
+		entityId: 'person',
+		obj: {
+			name: 'jane',
+			eyeColor: 'blue'
+		}
+	})
 
 	namedBobComponent.observe.subscribe(evt => console.log('named bob component', evt))
 	bob.observe.subscribe(evt => console.log('bob entity', evt))
