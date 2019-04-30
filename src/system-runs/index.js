@@ -1,64 +1,100 @@
 
 export const getSystemRuns = ({
 	isEqual,
+	systemCreated,
 	systemId,
 	jobData,
-	entities,
+	entityPubs,
+	componentPubs,
 	filter,
 	jobs,
 	meta,
 	pubSystem
 }) => {
-	const systemEvalData = {
+	const systemEvtData = {
+		systemCreated,
 		systemId,
 		filter,
 		jobData
 	}
-	return entities.reduce((systemCalls, entity) => {
-		const entityEvalData = {
-			...systemEvalData,
+	return entityPubs.reduce((systemCalls, { pub: pubEntity, entity }) => {
+		const entityEvtData = {
+			...systemEvtData,
 			entity
 		}
 		pubSystem({
-			event: 'system-evaluating-entity',
-			...entityEvalData
+			event: 'evaluating-entity',
+			...entityEvtData
+		})
+		pubEntity({
+			event: 'system-evaluating',
+			...entityEvtData
 		})
 		const matchingComponents = filter.reduce((matchingComponents, {
 			componentId
 		}) => {
 			const component = entity.getComponent({ componentId })
-			const componentEvalData = {
-				...entityEvalData,
+			const { pub: pubComponent } = componentPubs.find(({ component: { id } }) => component.id == id)
+			const componentEvtData = {
+				...entityEvtData,
 				component
 			}
 			pubSystem({
-				event: 'system-evaluating-entity-component',
-				...componentEvalData
+				event: 'evaluating-entity-component',
+				...componentEvtData
+			})
+			pubEntity({
+				event: 'system-evaluating-component',
+				...componentEvtData
+			})
+			pubComponent({
+				event: 'system-evaluating',
+				...componentEvtData
 			})
 			if (component) {
 				pubSystem({
-					event: 'system-evaluating-entity-match',
-					...componentEvalData
+					event: 'evaluating-entity-match',
+					...componentEvtData
+				})
+				pubEntity({
+					event: 'system-evaluating-component-match',
+					...componentEvtData
+				})
+				pubComponent({
+					event: 'system-evaluating-match',
+					...componentEvtData
 				})
 				matchingComponents.push({ component })
 			}
 			else {
 				pubSystem({
-					event: 'system-evaluating-entity-mismatch',
-					...componentEvalData
+					event: 'evaluating-entity-mismatch',
+					...componentEvtData
+				})
+				pubEntity({
+					event: 'system-evaluating-component-mismatch',
+					...componentEvtData
+				})
+				pubComponent({
+					event: 'system-evaluating-mismatch',
+					...componentEvtData
 				})
 			}
 			return matchingComponents
 		}, [])
 		pubSystem({
-			event: 'system-entity-matching-components',
-			...entityEvalData,
+			event: 'entity-matching-components',
+			...entityEvtData,
 			matchingComponents
 		})
 		if (matchingComponents.length == filter.length) {
 			pubSystem({
-				event: 'system-entity-match',
-				...entityEvalData
+				event: 'entity-match',
+				...entityEvtData
+			})
+			pubEntity({
+				event: 'matched-system',
+				...entityEvtData
 			})
 			const jobArg = matchingComponents.reduce((jobCall, {
 				component: {
@@ -79,12 +115,31 @@ export const getSystemRuns = ({
 				if (typeof result == 'object') {
 					Object.keys(result).forEach(k => {
 						const component = entity.getComponent({ componentId: k })
+						const { pub: pubComponent } = componentPubs.find(({ component: { id } }) => component.id == id)
 						const equalsResult = isEqual(result[k])
 						if (component) {
-							allComponents.push(component)
 							const { readonly } = filter.find(({ componentId }) => componentId == k)
+							pubComponent({
+								event: 'system-run-complete',
+								...entityEvtData,
+								meta,
+								previousData: component.data,
+								result: result[k],
+								component,
+								readonly: !readonly ? false : true
+							})
+							allComponents.push(component)
 							if (!readonly) {
 								if (!equalsResult(component.data)) {
+									pubComponent({
+										event: 'data-updated',
+										...entityEvtData,
+										meta,
+										previousData: component.data,
+										newData: result[k],
+										component,
+										readonly: !readonly ? false : true
+									})
 									updatedComponents.push(component)
 								}
 								component.data = result[k]
@@ -95,15 +150,23 @@ export const getSystemRuns = ({
 						}
 					})
 				}
-				pubSystem({
-					event: 'system-run-entity-complete',
-					...entityEvalData,
+				const runResults = {
+					...entityEvtData,
+					meta,
 					result,
 					components: {
 						all: allComponents,
 						updated: updatedComponents,
 						readonly: readonlyComponents
 					}
+				}
+				pubSystem({
+					event: 'run-entity-complete',
+					...runResults
+				})
+				pubEntity({
+					event: 'system-run-complete',
+					...runResults
 				})
 				return {
 					meta,

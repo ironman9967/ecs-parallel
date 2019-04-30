@@ -45,7 +45,9 @@ create(({
 	jane.addComponent({ component: namedJaneComponent })
 	jane.addComponent({ component: eyeColorBlueComponent })
 
-	person.observe.subscribe(console.log)
+	namedBobComponent.observe.subscribe(evt => console.log('named bob component', evt))
+	bob.observe.subscribe(evt => console.log('bob entity', evt))
+	person.observe.subscribe(evt => console.log('person system', evt))
 
 	const go = async () => {
 		const runs = await person.run({

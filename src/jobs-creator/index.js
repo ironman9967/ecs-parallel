@@ -13,6 +13,8 @@ export default async ({
 	finished
 }) => {
 	const systems = []
+	const entityPubs = []
+	const componentPubs = []
 	const unsubs = []
 
 	const createSubject = () => {
@@ -27,7 +29,7 @@ export default async ({
 			return { unsubscribe }
 		}
 		return {
-			next,
+			next: evt => next({ created: now(), ...evt }),
 			subscribe: cb => wrapSubscribe(subscribe, cb),
 			filter: cb => {
 				const { subscribe } = filter(cb)
@@ -60,9 +62,14 @@ export default async ({
 				entityId,
 				create: ({ id = newId() } = {}) => {
 					const components = []
-					return {
+					const {
+						next,
+						...observe
+					} = createSubject()
+					const entity = {
 						entityId,
 						id,
+						observe,
 						addComponent: ({ component }) => {
 							if (component.componentId == 'jobData') {
 								throw new Error(`'jobData' is a reserved componentId`)
@@ -74,45 +81,59 @@ export default async ({
 						},
 						getComponent: ({ componentId }) => components.find(({ componentId: cid }) => componentId == cid)
 					}
+					entityPubs.push({ pub: next, entity })
+					return entity
 				}
 			}),
 			createComponentCreator: ({ componentId = newId() } = {}) => ({
 				componentId,
-				create: ({ data, id = newId() } = {}) => ({ componentId, id, data })
+				create: ({ data, id = newId() } = {}) => {
+					const {
+						next,
+						...observe
+					} = createSubject()
+					const component = { componentId, id, observe, data }
+					componentPubs.push({ pub: next, component })
+					return component
+				}
 			}),
 			systems: systems.reduce((systems, {
 				observeSystem: {
-					next: pubSystemUnwrapped,
+					next: pubSystem,
 					...observe
 				},
 				observeJob: {
 					subscribe: subJob
 				},
+				created: systemCreated,
 				systemId,
 				filter
 			}) => {
-				const pubSystem = evt => pubSystemUnwrapped({ created: now(), ...evt })
 				subJob(({ event, ...job }) => pubSystem({ event: `system-${event}`, ...job }))
 				systems[systemId] = {
+					systemCreated,
 					systemId,
 					filter,
 					observe,
 					run: async ({
 						jobData,
-						entities
+						entities: userPassedEntities
 					}) => {
 						pubSystem({
-							event: 'system-running',
+							event: 'running',
+							systemCreated,
 							systemId,
 							filter,
 							jobData,
-							entities
+							entities: userPassedEntities
 						})
 						return Promise.all(getSystemRuns({
 							isEqual,
+							systemCreated,
 							systemId,
 							jobData,
-							entities,
+							entityPubs: entityPubs.filter(({ entity }) => userPassedEntities.find(({ id }) => entity.id == id)),
+							componentPubs,
 							filter,
 							jobs,
 							meta,
