@@ -8,6 +8,10 @@
 		"start-test-app": "npm run build && node dist/test-app.js",
 		"watch": "npm-watch"
 	},
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ironman9967/ecs-parallel.git"
+    },
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
