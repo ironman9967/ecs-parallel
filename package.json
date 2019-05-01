@@ -28,7 +28,7 @@
 	},
 	"dependencies": {
 		"lodash": "^4.17.11",
-		"parallel-job-runner": "^0.2.1",
+		"parallel-job-runner": "^0.2.3",
 		"performance-now": "^2.1.0",
 		"subject-with-filter": "^1.0.0"
 	},
