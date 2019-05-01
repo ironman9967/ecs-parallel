@@ -8,17 +8,17 @@
 		"start-test-app": "npm run build && node dist/test-app.js",
 		"watch": "npm-watch"
 	},
-    "repository": {
-      "type": "git",
-      "url": "git+https://github.com/ironman9967/ecs-parallel.git"
-    },
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ironman9967/ecs-parallel.git"
+	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
-    "bugs": {
-      "url": "https://github.com/ironman9967/ecs-parallel/issues"
-    },
-    "homepage": "https://github.com/ironman9967/ecs-parallel#readme",
+	"bugs": {
+		"url": "https://github.com/ironman9967/ecs-parallel/issues"
+	},
+	"homepage": "https://github.com/ironman9967/ecs-parallel#readme",
 	"devDependencies": {
 		"@babel/cli": "^7.4.4",
 		"@babel/core": "^7.4.4",
@@ -28,7 +28,7 @@
 	},
 	"dependencies": {
 		"lodash": "^4.17.11",
-		"parallel-job-runner": "^0.1.5",
+		"parallel-job-runner": "^0.2.0",
 		"performance-now": "^2.1.0",
 		"subject-with-filter": "^1.0.0"
 	},
